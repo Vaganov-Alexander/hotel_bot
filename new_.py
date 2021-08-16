@@ -32,7 +32,7 @@ simple_commands = {
 }
 
 
-@bot.message_handlers(content_types=['text'])
+@bot.message_handler(content_types=['text'])
 def execute_command(message: Message) -> None:
     """
     Обработчик команд, вводимых пользователем
@@ -79,7 +79,7 @@ def show_the_cities_list(message: Message) -> None:
         bot.send_message(message.chat.id, f'choose town in:', reply_markup=markup)
 
 
-@bot.callback_query_handlers(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: True)
 def choose_hotels_amount(call: Any) -> None:
     """
     обработчик запроса с Inline клавиатуры
