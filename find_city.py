@@ -47,23 +47,23 @@ def finding_cities(city: str) -> List[City]:
         city = '-'.join([letter.capitalize() for letter in city.split('-')])
     else:
         city = ' '.join([letter.capitalize() for letter in city.split()])
-        querystring = {'query': city, 'locale': locale}
-        find_city_request = requests.get(CITY_URL, headers=headers, params=querystring)
-        suggestion_array = json.loads(find_city_request.text)['suggestions']
-        for current_suggestion in suggestion_array:
-            if current_suggestion.get('group') == 'CITY_GROUP':
-                suggestion_array = current_suggestion['entities']
-                break
-        for current_city in suggestion_array:
-            city_name = current_city.get('caption').replace("<span class='highlighted'>", "").replace("</span>", "")
+    querystring = {'query': city, 'locale': locale}
+    find_city_request = requests.get(CITY_URL, headers=headers, params=querystring)
+    suggestion_array = json.loads(find_city_request.text)['suggestions']
+    for current_suggestion in suggestion_array:
+        if current_suggestion.get('group') == 'CITY_GROUP':
+            suggestion_array = current_suggestion['entities']
+            break
+    for current_city in suggestion_array:
+        city_name = current_city.get('caption').replace("<span class='highlighted'>", "").replace("</span>", "")
 
-            if current_city.get('type') == 'CITY' and city_name.startwith(city):
-                if locale == 'ru_RU':
-                    cities_array.append(City(city_name.split(', ')[0] + ', ' + city_name.split(', ')[-1],
-                                             current_city.get('destinationId')))
-                else:
-                    cities_array.append(City(city_name, current_city.get('destinationId')))
-        return cities_array
+        if current_city.get('type') == 'CITY' and city_name.startwith(city):
+            if locale == 'ru_RU':
+                cities_array.append(City(city_name.split(', ')[0] + ', ' + city_name.split(', ')[-1],
+                                         current_city.get('destinationId')))
+            else:
+                cities_array.append(City(city_name, current_city.get('destinationId')))
+    return cities_array
 
 
 def finding_hotel_price(destination_id: str,
@@ -86,7 +86,7 @@ def finding_hotel_price(destination_id: str,
     request_parameters: Dict = {
         'adults1': '1',
         'pageNumber': '1',
-        'desstinationId': destination_id,
+        'destinationId': destination_id,
         'pageSize': page_size,
         'chekOut': str(chek_out_day),
         'chekIn': str(check_in_day),
