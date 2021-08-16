@@ -2,7 +2,6 @@ import os
 import json
 import requests
 from dotenv import load_dotenv
-from ast import literal_eval
 from datetime import datetime, timedelta
 from re import match, findall
 from typing import Optional, List, Dict
@@ -39,7 +38,7 @@ def finding_cities(city: str) -> List[City]:
     :return:
     """
     cities_array = list()
-    if len(findall(r'[а-яА-ЯёЁ]', city)) > 0:
+    if len(findall(r'[а-яА-ЯЁё]', city)) > 0:
         locale = 'ru_RU'
     else:
         locale = 'en_US'

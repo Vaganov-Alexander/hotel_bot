@@ -185,7 +185,7 @@ def find_price(message: Message) -> None:
     if hotels_array:
         for hotel in hotels_array:
             bot.send_message(message.chat.id, f'{hotel.hotel_name} '
-                                              f'adress: {hotel.hotel_address} '
+                                              f'address: {hotel.hotel_address} '
                                               f'distance: {hotel.distance_from_center} km from center '
                                               f'price: {hotel.hotel_price} RUB')
     else:
