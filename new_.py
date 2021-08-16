@@ -7,7 +7,7 @@ from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup as BotMarkup
 from telebot.types import InlineKeyboardButton as BotButtons
 from telebot.types import Message
-from find_city import finding_cities, finding_hotel
+from find_city import finding_cities, finding_hotel_price
 
 load_dotenv()
 token = os.environ.get('TOKEN_TELEGRAM')
@@ -90,8 +90,9 @@ def choose_hotels_amount(call: Any) -> None:
     bot.send_message(call.message.chat.id, city_name)
     bot.send_message(call.message.chat.id, f'choose of 10 hotel')
     bot.edit_message_reply_markup(chat_id=call.message.chat.id, reply_markup=None)
-    if (execute_command.sorting_key == 'PRICE' or execute_command.sorting_key == 'PRICE_HIGH_FIRST'):
-        bot.register_next_step_handler((call.message, find_price))
+    if (execute_command.sorting_key == 'PRICE'
+            or execute_command.sorting_key == 'PRICE_HIGH_FIRST'):
+        bot.register_next_step_handler(call.message, find_price)
     elif execute_command.sorting_key == 'DISTANCE_FROM_LANDMARK':
         bot.register_next_step_handler(call.message, best_deal)
 
@@ -126,7 +127,7 @@ def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None
                     return
                 query_array.append(message.text)
                 if len(query_array) == 1:
-                    bot.send_message((message.chat.id, f'enter minimal price'))
+                    bot.send_message(message.chat.id, f'enter minimal price')
                     bot.register_next_step_handler(message, best_deal, query_array)
                     return
                 elif len(query_array) == 2:
@@ -152,7 +153,7 @@ def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None
                                                            best_deal.minimal_price,
                                                            best_deal.maximum_price,
                                                            best_deal.distance)
-                        if hotel_array:
+                        if hotels_array:
                             for hotel in hotels_array:
                                 bot.send_message(message.chat.id, f'{hotel.hotel_name} adres: {hotel.hotel_address}'
                                                                   f'distance {hotel.distance_from_center}'
@@ -184,8 +185,11 @@ def find_price(message: Message) -> None:
     if hotels_array:
         for hotel in hotels_array:
             bot.send_message(message.chat.id, f'{hotel.hotel_name} '
-                                              f'adress: {hotel.hotel_adress} '
+                                              f'adress: {hotel.hotel_address} '
                                               f'distance: {hotel.distance_from_center} km from center '
                                               f'price: {hotel.hotel_price} RUB')
     else:
-        pass
+        bot.send_message(message.chat.id, f'not found')
+
+
+bot.polling()
