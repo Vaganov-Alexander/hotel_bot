@@ -120,48 +120,49 @@ def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None
                 bot.send_message(message.chat.id, f'enter digit distance of center')
                 bot.register_next_step_handler(message, best_deal, query_array)
                 return
-            else:
-                if len(query_array) == 0 and int(message.text) > 10:
-                    bot.send_message(message.migrate_to_chat_id, f'enter amount hotel, lower than 10')
-                    bot.register_next_step_handler(message, best_deal)
-                    return
-                query_array.append(message.text)
-                if len(query_array) == 1:
-                    bot.send_message(message.chat.id, f'enter minimal price')
-                    bot.register_next_step_handler(message, best_deal, query_array)
-                    return
-                elif len(query_array) == 2:
-                    bot.send_message(message.chat.id, f'enter maximal price')
-                    bot.register_next_step_handler(message, best_deal, query_array)
-                    return
-                elif len(query_array) == 3:
-                    bot.send_message(message.chat.id, f'enter distance of center')
-                    bot.register_next_step_handler(message, best_deal, query_array)
-                    return
-                elif len(query_array) == 4:
-                    if int(query_array[1]) > int(query_array[2]):
-                        query_array[1], query_array[2] = query_array[2], query_array[1]
-                    elif int(query_array[3]) > 999:
-                        best_deal.hotels_amount = query_array[0]
-                        best_deal.minimal_price = query_array[1]
-                        best_deal.maximum_price = query_array[2]
-                        best_deal.distance = query_array[3]
-                        bot.send_message(message.chat.id, f'search hotels, wait')
-                        hotels_array = finding_hotel_price(choose_hotels_amount.city_id,
-                                                           best_deal.hotels_amount,
-                                                           execute_command.sorting_key,
-                                                           best_deal.minimal_price,
-                                                           best_deal.maximum_price,
-                                                           best_deal.distance)
-                        if hotels_array:
-                            for hotel in hotels_array:
-                                bot.send_message(message.chat.id, f'{hotel.hotel_name} adres: {hotel.hotel_address}'
-                                                                  f'distance {hotel.distance_from_center}'
-                                                                  f'km from center price is {hotel.hotel_price} RUB')
-                                break
-                            else:
-                                bot.send_message(message.chat.id, f'not fond')
-                                break
+        else:
+            if len(query_array) == 0 and int(message.text) > 10:
+                bot.send_message(message.migrate_to_chat_id, f'enter amount hotel, lower than 10')
+                bot.register_next_step_handler(message, best_deal)
+                return
+            query_array.append(message.text)
+            if len(query_array) == 1:
+                bot.send_message(message.chat.id, f'enter minimal price')
+                bot.register_next_step_handler(message, best_deal, query_array)
+                return
+            elif len(query_array) == 2:
+                bot.send_message(message.chat.id, f'enter maximal price')
+                bot.register_next_step_handler(message, best_deal, query_array)
+                return
+            elif len(query_array) == 3:
+                bot.send_message(message.chat.id, f'enter distance of center')
+                bot.register_next_step_handler(message, best_deal, query_array)
+                return
+            elif len(query_array) == 4:
+                if int(query_array[1]) > int(query_array[2]):
+                    query_array[1], query_array[2] = query_array[2], query_array[1]
+                elif int(query_array[3]) > 999:
+                    query_array[3] = '999'
+                best_deal.hotels_amount = query_array[0]
+                best_deal.minimal_price = query_array[1]
+                best_deal.maximum_price = query_array[2]
+                best_deal.distance = query_array[3]
+                bot.send_message(message.chat.id, f'search hotels, wait')
+                hotels_array = finding_hotel_price(choose_hotels_amount.city_id,
+                                                   best_deal.hotels_amount,
+                                                   execute_command.sorting_key,
+                                                   best_deal.minimal_price,
+                                                   best_deal.maximum_price,
+                                                   best_deal.distance)
+                if hotels_array:
+                    for hotel in hotels_array:
+                        bot.send_message(message.chat.id, f'{hotel.hotel_name} address: {hotel.hotel_address}'
+                                                          f'distance {hotel.distance_from_center}'
+                                                          f'km from center price is {hotel.hotel_price} RUB')
+                    break
+                else:
+                    bot.send_message(message.chat.id, f'not fond')
+                    break
 
 
 def find_price(message: Message) -> None:
