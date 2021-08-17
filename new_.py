@@ -89,7 +89,7 @@ def choose_hotels_amount(call: Any) -> None:
     city_name, choose_hotels_amount.city_id = call.data.split('=')
     bot.send_message(call.message.chat.id, city_name)
     bot.send_message(call.message.chat.id, f'choose of 10 hotel')
-    bot.edit_message_reply_markup(chat_id=call.message.chat.id, reply_markup=None)
+    bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=None)
     if (execute_command.sorting_key == 'PRICE'
             or execute_command.sorting_key == 'PRICE_HIGH_FIRST'):
         bot.register_next_step_handler(call.message, find_price)

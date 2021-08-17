@@ -16,7 +16,7 @@ headers = {
 }
 
 check_in_day = datetime.today().date()
-chek_out_day = check_in_day + timedelta(days=1)
+check_out_day = check_in_day + timedelta(days=1)
 
 
 class City:
@@ -92,8 +92,8 @@ def finding_hotel_price(destination_id: str,
         'pageNumber': '1',
         'destinationId': destination_id,
         'pageSize': page_size,
-        'chekOut': str(chek_out_day),
-        'chekIn': str(check_in_day),
+        'checkOut': str(check_out_day),
+        'checkIn': str(check_in_day),
         'sortOrder': sorting_key,
         'locale': 'ru_RU',
         'currency': 'RUB',
