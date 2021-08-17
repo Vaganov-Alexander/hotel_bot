@@ -10,7 +10,11 @@ load_dotenv()
 
 CITY_URL = 'https://hotals4.p.rapidapi.com/locations/search'
 HOTEL_URL = 'https://hotels4.p.rapidapi.com/properties/list'
-headers = os.environ.get('RAPID_KEY')
+headers = {
+    'x-rapidapi-key': os.environ.get('RAPID_KEY'),
+    'x-rapidapi-host': os.environ.get('RAPID_HOST'),
+}
+
 check_in_day = datetime.today().date()
 chek_out_day = check_in_day + timedelta(days=1)
 
@@ -57,7 +61,7 @@ def finding_cities(city: str) -> List[City]:
     for current_city in suggestion_array:
         city_name = current_city.get('caption').replace("<span class='highlighted'>", "").replace("</span>", "")
 
-        if current_city.get('type') == 'CITY' and city_name.startwith(city):
+        if current_city.get('type') == 'CITY' and city_name.startswith(city):
             if locale == 'ru_RU':
                 cities_array.append(City(city_name.split(', ')[0] + ', ' + city_name.split(', ')[-1],
                                          current_city.get('destinationId')))
@@ -69,7 +73,7 @@ def finding_cities(city: str) -> List[City]:
 def finding_hotel_price(destination_id: str,
                         page_size: str, sorting_key: str,
                         minimal_price: Optional[str] = None,
-                        maximal_price: Optional[str] = None,
+                        maximum_price: Optional[str] = None,
                         distance: str = '999') -> List[Hotel]:
     """
     получает на вход ряд аргументов из которых формирует параметры для запроса к апи отелей
@@ -79,7 +83,7 @@ def finding_hotel_price(destination_id: str,
     :param page_size:
     :param sorting_key:
     :param minimal_price:
-    :param maximal_price:
+    :param maximum_price:
     :param distance:
     :return:
     """
@@ -93,7 +97,7 @@ def finding_hotel_price(destination_id: str,
         'sortOrder': sorting_key,
         'locale': 'ru_RU',
         'currency': 'RUB',
-        'priceMax': maximal_price,
+        'priceMax': maximum_price,
         'priceMin': minimal_price,
         'landmarkIds': 'City center',
     }
