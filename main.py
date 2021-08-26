@@ -156,8 +156,8 @@ def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None
                                                    best_deal.distance)
                 if hotels_array:
                     for hotel in hotels_array:
-                        bot.send_message(message.chat.id, f'{hotel.hotel_name} address: {hotel.hotel_address} '
-                                                          f'distance {hotel.distance_from_center} '
+                        bot.send_message(message.chat.id, f'{hotel.hotel_name} address: {hotel.hotel_address}'
+                                                          f'distance {hotel.distance_from_center}'
                                                           f'km from center price is {hotel.hotel_price} RUB')
                     break
                 else:
