@@ -11,8 +11,8 @@ load_dotenv()
 CITY_URL = 'https://hotals4.p.rapidapi.com/locations/search'
 HOTEL_URL = 'https://hotels4.p.rapidapi.com/properties/list'
 headers = {
-    'x-rapidapi-key': 'dddd118f51msh26834e5ebd239d7p141e8djsn99f0455c48b9',
-    'x-rapidapi-host': 'hotels4.p.rapidapi.com'
+    'x-rapidapi-key': os.environ.get('RAPID_KEY'),
+    'x-rapidapi-host': os.environ.get('RAPID_HOST'),
 }
 
 check_in_day = datetime.today().date()

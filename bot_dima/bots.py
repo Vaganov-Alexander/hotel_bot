@@ -1,12 +1,15 @@
+import os
 import telebot
 import logging
 from telebot import types
 from find_city import finding_cities, finding_hotel_price
-from datetime import datetime
+from dotenv import load_dotenv
 from typing import Any, Optional, List
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-bot = telebot.TeleBot('1927307007:AAEg9jThL06MmsbRUcLJOUFmQIkOo4sr-nc')
+load_dotenv()
+token = os.environ.get('TOKEN_TELEGRAM')
+bot = telebot.TeleBot(token)
 keyboard = telebot.types.ReplyKeyboardMarkup()
 button1 = types.KeyboardButton("Tоп самых дешёвых отелей в городе")
 button2 = types.KeyboardButton("Tоп самых дорогих отелей в городе")
