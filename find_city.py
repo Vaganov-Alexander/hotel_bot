@@ -38,11 +38,9 @@ def finding_cities(city: str) -> List[City]:
     получает на вход название города делает запрос к апи и
     возвращает список из обектов класса сити куда сохраняется
     называние города ИД полученные из джосон сервера
-    :param city:
-    :return:
     """
     cities_array = list()
-    if len(findall(r'[а-яА-ЯЁё]', city)) > 0:
+    if len(findall(r"[а-яА-ЯЁё]", city)) > 0:
         locale = 'ru_RU'
     else:
         locale = 'en_US'
@@ -59,7 +57,10 @@ def finding_cities(city: str) -> List[City]:
             suggestion_array = current_suggestion['entities']
             break
     for current_city in suggestion_array:
-        city_name = current_city.get('caption').replace("<span class='highlighted'>", "").replace("</span>", "")
+        city_name = current_city.get('caption').replace("<span "
+                                                        "class='highlighted'>",
+                                                        '').replace("</span>",
+                                                                    '')
 
         if current_city.get('type') == 'CITY' and city_name.startswith(city):
             if locale == 'ru_RU':
@@ -78,14 +79,7 @@ def finding_hotel_price(destination_id: str,
     """
     получает на вход ряд аргументов из которых формирует параметры для запроса к апи отелей
     и выдачи списка из объектов Hotel в которых сохранены данные о названии отел, адресе,
-    цене за номер и расстояни до центра
-    :param destination_id:
-    :param page_size:
-    :param sorting_key:
-    :param minimal_price:
-    :param maximum_price:
-    :param distance:
-    :return:
+    цене за номер и расстояние до центра
     """
     request_parameters: Dict = {
         'adults1': '1',
@@ -103,17 +97,22 @@ def finding_hotel_price(destination_id: str,
     }
 
     find_hotel_request = requests.get(HOTEL_URL, headers=headers, params=request_parameters)
-    results_array = json.loads(find_hotel_request.text)['data']['body']['searchResults']['results']
+    results_array = \
+        json.loads(find_hotel_request.text)['data']['body']['searchResults']['results']
     hotels_array = list()
     for current_hotel in results_array:
         hotel_name = current_hotel.get('name')
         hotel_address = current_hotel.get('address').get('streetAddress')
         hotel_price = current_hotel.get('ratePlan').get('price').get('exactCurrent')
-        hotel_distance = ''.join(symbol for symbol in current_hotel.get('landmarks')[0].get('distance')
-                                 if match(r'[0-9,.]', symbol)).replace(',', '.')
+        hotel_distance = "".join(symbol for symbol in
+                                 current_hotel.get('landmarks')[0].get(
+                                     'distance')
+                                 if match(r"[0-9,.]", symbol)).replace(',', '.')
         hotel_distance = str(round(float(hotel_distance) * 1.6, 2))
         if float(distance) >= float(hotel_distance):
-            hotels_array.append(Hotel(hotel_name, hotel_address, hotel_price, hotel_distance))
+            hotels_array.append(
+                Hotel(hotel_name, hotel_address, hotel_price, hotel_distance))
     if sorting_key == 'DISTANCE_FROM_LANDMARK':
         hotels_array = sorted(hotels_array, key=lambda hotel: hotel.hotel_price)
+
     return hotels_array
