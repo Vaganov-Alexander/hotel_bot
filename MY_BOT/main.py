@@ -2,7 +2,6 @@ import os
 import sys
 import telebot
 import logging
-from telebot import types
 from find_city import find_cities, find_price_of_hotel
 from dotenv import load_dotenv
 from typing import Any, Optional, List
@@ -26,17 +25,7 @@ ch.setFormatter(formatter)
 main_commands = {'/lowprice', '/highprice', '/bestdeal', }
 
 # # # # # # # # # # # # # # # HELP COMMANDS # # # # # # # # # # # # # # #
-help_commands = {
-    '/start': lambda message:
-    bot.send_message(message.from_user.id, f'Hello {message.chat.first_name}!\n I am a bot for finding hotels'),
-    '/help': lambda message:
-    bot.send_message(message.from_user.id, f'Here are my commands:\n'
-                                           f'/lowprice - find hotel low price hotel\n'
-                                           f'/highprice - find hotel high price hotel\n'
-                                           f'/bestdeal - most suitable for the price and location from the center\n'
-                                           f'/start - launch bot\n'
-                                           f'/help - see bot commands\n'),
-}
+help_commands = {'/start', '/help', }
 
 
 # # # # # # # # # # # # # # # BOT LOGICS # # # # # # # # # # # # # # #
@@ -48,7 +37,18 @@ def command_handler(message: Message):
     :return:
     """
     if message.text in help_commands:
-        help_commands[message.text](message)
+        if message.text == '/start':
+            bot.send_message(message.from_user.id, f'Hello {message.chat.first_name}!\n'
+                                                   f'I am a bot for finding hotels\n'
+                                                   f'Send /help for help')
+        elif message.text == '/help':
+            bot.send_message(message.from_user.id,
+                             f'Here are my commands:\n'
+                             f'/lowprice - find hotel low price hotel\n'
+                             f'/highprice - find hotel high price hotel\n'
+                             f'/bestdeal - most suitable for the price and location from the center\n'
+                             f'/start - launch bot\n'
+                             f'/help - see bot commands\n')
     elif message.text in main_commands:
         if message.text == '/lowprice':
             bot.send_message(message.chat.id, f'Find low price hotel')
@@ -174,7 +174,7 @@ def bestdeal(message: Message, answer_hotel: Optional[List[str]] = None):
 
 def find_price(message: Message):
     """
-    функция обрабботки команд highprice lowprice
+    Find low price and high price hotel (/lowprice and /highprice command)
     :param message:
     :return:
     """
