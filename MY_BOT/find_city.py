@@ -123,7 +123,6 @@ def find_price_of_hotel(destination_id: str,
                                  current_hotel.get('landmarks')[0].get(
                                      'distance')
                                  if match(r"[0-9,.]", symbol)).replace(',', '.')
-        hotel_distance = str(round(float(hotel_distance) * 1.6, 2))
         if float(distance) >= float(hotel_distance):
             hotels_list.append(
                 Hotel(hotel_name, hotel_address, hotel_price, hotel_distance))

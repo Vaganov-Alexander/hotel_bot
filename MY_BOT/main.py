@@ -164,7 +164,7 @@ def bestdeal(message: Message, answer_hotel: Optional[List[str]] = None):
                     for hotel in hotels_array:
                         bot.send_message(message.chat.id, f'{hotel.hotel_name}\n'
                                                           f'address: {hotel.hotel_address}\n'
-                                                          f'distance: {hotel.distance_from_center} km from center\n'
+                                                          f'distance: {hotel.distance_from_center} miles from center\n'
                                                           f'price is {hotel.hotel_price} USD')
                     break
                 else:
@@ -194,7 +194,7 @@ def find_price(message: Message):
         for hotel in hotels_array:
             bot.send_message(message.chat.id, f'{hotel.hotel_name}\n'
                                               f'address: {hotel.hotel_address}\n'
-                                              f'distance: {hotel.distance_from_center} km from center\n'
+                                              f'distance: {hotel.distance_from_center} mile from center\n'
                                               f'price: {hotel.hotel_price} USD')
     else:
         bot.send_message(message.chat.id, f'Nothing found')
