@@ -1,30 +1,35 @@
-import logging
 import os
+import telebot
+import logging
+from telebot import types
+from find_city import finding_cities, finding_hotel_price
 from datetime import datetime
 from typing import Any, Optional, List
 from dotenv import load_dotenv
-from telebot import TeleBot
-from telebot.types import InlineKeyboardMarkup as BotMarkup
-from telebot.types import InlineKeyboardButton as BotButtons
-from telebot.types import Message
-from find_city import finding_cities, finding_hotel_price
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 load_dotenv()
 token = os.environ.get('TOKEN_TELEGRAM')
-bot = TeleBot(token)
-logging.basicConfig(filename='bot_logging.log', level=logging.INFO)
-log = logging.getLogger('hotels_bot')
+bot = telebot.TeleBot(token)
+keyboard = telebot.types.ReplyKeyboardMarkup()
+button1 = types.KeyboardButton("Tоп самых дешёвых отелей в городе")
+button2 = types.KeyboardButton("Tоп самых дорогих отелей в городе")
+button3 = types.KeyboardButton("Tоп отелей, наиболее подходящих\n по цене и расположению от центра")
+keyboard.row(button1)
+keyboard.row(button2)
+keyboard.row(button3)
+
 primary_commands = {'/lowprice', '/highprice', '/bestdeal'}
 simple_commands = {
     '/start': lambda message:
-    bot.send_message(message.from_user.id, f'Hello {message.chat.first_name}!\n bot for search hotel'),
+    bot.send_message(message.from_user.id, f'Привет {message.chat.first_name}!\n Я бот для поиска отелей'),
     '/help': lambda message:
-    bot.send_message(message.from_user.id, f'/lowprice - low price hotels\n'
-                                           f'/highprice - high price hotel\n'
-                                           f'/bestdeal - best deal hotel\n'
-                                           f'/start - start bot\n'
-                                           f'/help - list of command bot\n'
-                                           f'/test - test message'),
+    bot.send_message(message.from_user.id, f'/lowprice - низкая цена отеля\n'
+                                           f'/highprice - высокая цена отеля\n'
+                                           f'/bestdeal - ближние по расположению от центра\n'
+                                           f'/start - запустить бота\n'
+                                           f'/help - посмотреть команды бота\n'
+                                           f'/test - для тестирования бота'),
     '/test': lambda message:
     bot.send_message(message.from_user.id, f'test message {message.chat.first_name}!'),
     'hello'.lower(): lambda message:
@@ -32,110 +37,115 @@ simple_commands = {
 }
 
 
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.send_message(message.chat.id,
+                     "Привет, я бот по путешествию)\nДля просмотра меню напиши /menu\nДля помощи напиши /help")
+
+
+@bot.message_handler(commands=['help'])
+def help_bots(message):
+    bot.send_message(message.chat.id,
+                     'Бот предназначен для поиска отеля в нужном для тебя городе\nДля просмотра возможностей бота напиши /menu')
+
+
+@bot.message_handler(commands=['menu'])
+def low_state(message):
+    bot.send_message(message.chat.id, 'Вот мои возможности', reply_markup=keyboard)
+
+
 @bot.message_handler(content_types=['text'])
-def execute_command(message: Message) -> None:
-    """
-    Обработчик команд, вводимых пользователем
-    :param message:
-    :return:
-    """
-    if message.text in simple_commands:
-        simple_commands[message.text](message)
-    elif message.text in primary_commands:
-        if message.text == '/lowprice':
-            bot.send_message(message.chat.id, f'find low price hotel')
-            execute_command.sorting_key = 'PRICE'
-        elif message.text == '/highprice':
-            bot.send_message(message.chat.id, f'find high price hotel')
-            execute_command.sorting_key = 'PRICE_HIGH_FIRST'
-        else:
-            bot.send_message(message.chat.id, f'find best deal hotel')
-            execute_command.sorting_key = 'DISTANCE_FROM_LANDMARK'
-        bot.send_message(message.chat.id, f'enter city: ')
+def execute_command(message):
+    if message.text == 'Tоп самых дешёвых отелей в городе' or message.text == '/lowprice':
+        bot.send_message(message.chat.id, f'Поиск самых дешёвых отелей в городе')
+        execute_command.sorting_key = 'PRICE'
+        bot.send_message(message.chat.id, f'Введите город: ')
+        bot.register_next_step_handler(message, show_the_cities_list)
+    elif message.text == 'Tоп самых дорогих отелей в городе' or message.text == '/highprice':
+        bot.send_message(message.chat.id, f'Поиск самых дорогих отелей в городе')
+        execute_command.sorting_key = 'PRICE_HIGH_FIRST'
+        bot.send_message(message.chat.id, f'Введите город: ')
+        bot.register_next_step_handler(message, show_the_cities_list)
+    elif message.text == 'Tоп отелей, наиболее подходящих\n по цене и расположению от центра' or message.text == '/bestdeal':
+        bot.send_message(message.chat.id, f'Поиск самых дорогих отелей в городе')
+        execute_command.sorting_key = 'DISTANCE_FROM_LANDMARK'
+        bot.send_message(message.chat.id, f'Введите город: ')
         bot.register_next_step_handler(message, show_the_cities_list)
     else:
-        bot.send_message(message.from_user.id, f'wrong command')
+        bot.send_message(message.from_user.id, f'Не понимаю введите /help')
 
 
-def show_the_cities_list(message: Message) -> None:
-    """
-    вывод inline клавиатуры для выбора города
-    :param message:
-    :return:
-    """
-    markup = BotMarkup(row_width=1)
+def show_the_cities_list(message: telebot.types.Message) -> None:
+    markup = InlineKeyboardMarkup(row_width=1)
     markup_buttons = list()
     for current_city in finding_cities(message.text):
         markup_buttons.append(
-            BotButtons(text=current_city.city_name,
-                       callback_data='='.join([current_city.city_name, current_city.city_id]))
-        )
+            InlineKeyboardButton(text=current_city.city_name,
+                                 callback_data='='.join([current_city.city_name, current_city.city_id])))
 
     if not markup_buttons:
-        bot.send_message(message.chat.id, f'not find this city, re-enter')
+        bot.send_message(message.chat.id, f'не нашел такого города, повторите еще раз:)')
         bot.register_next_step_handler(message, show_the_cities_list)
     else:
         markup.add(*markup_buttons)
-        bot.send_message(message.chat.id, f'choose town in:', reply_markup=markup)
+        bot.send_message(message.chat.id, f'Выберите нужный город', reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def choose_hotels_amount(call: Any) -> None:
+def choose_hotels_amount(call) -> None:
     """
     обработчик запроса с Inline клавиатуры
-    :param call:
-    :return:
     """
     city_name, choose_hotels_amount.city_id = call.data.split('=')
     bot.send_message(call.message.chat.id, city_name)
-    bot.send_message(call.message.chat.id, f'choose of 10 hotel')
+    bot.send_message(call.message.chat.id, f'Выберите до 10 отелей')
     bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=None)
-    if (execute_command.sorting_key == 'PRICE'
-            or execute_command.sorting_key == 'PRICE_HIGH_FIRST'):
+    if (execute_command.sorting_key == 'PRICE' or execute_command.sorting_key == 'PRICE_HIGH_FIRST'):
         bot.register_next_step_handler(call.message, find_price)
     elif execute_command.sorting_key == 'DISTANCE_FROM_LANDMARK':
         bot.register_next_step_handler(call.message, best_deal)
 
 
-def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None:
+def best_deal(message: telebot.types.Message, query_array: Optional[List[str]] = None) -> None:
     """
-    функция для обработки команды /bestdeal
-    :param message:
-    :param query_array:
-    :return:
+Функция для обработки команды /bestdeal
     """
     if query_array is None:
         query_array = list()
     while len(query_array) < 4:
         if not message.text.isdigit():
             if len(query_array) == 0:
-                bot.send_message(message.chat.id, f'pls enter digit lower than 10')
+                bot.send_message(message.chat.id, f'Пожалуйста введите число меньше 10')
                 bot.register_next_step_handler(message, best_deal)
                 return
             elif len(query_array) == 1:
-                bot.send_message(message.chat.id, f'enter low price digit')
+                bot.send_message(message.chat.id, f'Введите минимальную цену')
+                bot.register_next_step_handler(message, best_deal, query_array)
+                return
+            elif len(query_array) == 2:
+                bot.send_message(message.chat.id, f'Введите максимальную цену')
                 bot.register_next_step_handler(message, best_deal, query_array)
                 return
             elif len(query_array) == 3:
-                bot.send_message(message.chat.id, f'enter digit distance of center')
+                bot.send_message(message.chat.id, f'Введите расстояние от центра')
                 bot.register_next_step_handler(message, best_deal, query_array)
                 return
         else:
             if len(query_array) == 0 and int(message.text) > 10:
-                bot.send_message(message.migrate_to_chat_id, f'enter amount hotel, lower than 10')
+                bot.send_message(message.chat.id, f'Введите кол-во отелей меньше 10')
                 bot.register_next_step_handler(message, best_deal)
                 return
             query_array.append(message.text)
             if len(query_array) == 1:
-                bot.send_message(message.chat.id, f'enter minimal price')
+                bot.send_message(message.chat.id, f'Введите минимальную цену')
                 bot.register_next_step_handler(message, best_deal, query_array)
                 return
             elif len(query_array) == 2:
-                bot.send_message(message.chat.id, f'enter maximal price')
+                bot.send_message(message.chat.id, f'Введите максимальную цену')
                 bot.register_next_step_handler(message, best_deal, query_array)
                 return
             elif len(query_array) == 3:
-                bot.send_message(message.chat.id, f'enter distance of center')
+                bot.send_message(message.chat.id, f'Введите расстояние от центра')
                 bot.register_next_step_handler(message, best_deal, query_array)
                 return
             elif len(query_array) == 4:
@@ -147,7 +157,7 @@ def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None
                 best_deal.minimal_price = query_array[1]
                 best_deal.maximum_price = query_array[2]
                 best_deal.distance = query_array[3]
-                bot.send_message(message.chat.id, f'search hotels, wait')
+                bot.send_message(message.chat.id, f'Идёт поиск отеля подождите:)')
                 hotels_array = finding_hotel_price(choose_hotels_amount.city_id,
                                                    best_deal.hotels_amount,
                                                    execute_command.sorting_key,
@@ -156,41 +166,40 @@ def best_deal(message: Message, query_array: Optional[List[str]] = None) -> None
                                                    best_deal.distance)
                 if hotels_array:
                     for hotel in hotels_array:
-                        bot.send_message(message.chat.id, f'{hotel.hotel_name} address: {hotel.hotel_address} '
-                                                          f'distance {hotel.distance_from_center} '
-                                                          f'km from center price is {hotel.hotel_price} RUB')
+                        bot.send_message(message.chat.id, f'{hotel.hotel_name} адрес: {hotel.hotel_address}'
+                                                          f'расстояние {hotel.distance_from_center}'
+                                                          f'км от центра города цена {hotel.hotel_price} RUB')
                     break
                 else:
-                    bot.send_message(message.chat.id, f'not fond')
+                    bot.send_message(message.chat.id, f'Не нашел(')
                     break
 
 
-def find_price(message: Message) -> None:
+def find_price(message: telebot.types.Message) -> None:
     """
     функция обрабботки команд highprice lowprice
-    :param message:
-    :return:
     """
     find_price.hotels_amount = message.text
     if not find_price.hotels_amount.isdigit():
-        bot.send_message(message.chat.id, f'pls enter digit hotel (lower than 10')
+        bot.send_message(message.chat.id, f'Пожалуйста введите кол-во отелей(меньше 10)')
         bot.register_next_step_handler(message, find_price)
         return
     elif int(find_price.hotels_amount) > 10:
-        bot.send_message(message.chat.id, f'pls enter digit hotel (lower than 10')
+        bot.send_message(message.chat.id, f'Пожалуйста введите кол-во отелей(меньше 10)')
         bot.register_next_step_handler(message, find_price)
         return
-    bot.send_message(message.chat.id, f'search hotels, wait')
+    bot.send_message(message.chat.id, f'Идёт поиск')
     hotels_array = finding_hotel_price(choose_hotels_amount.city_id, find_price.hotels_amount,
                                        execute_command.sorting_key)
     if hotels_array:
         for hotel in hotels_array:
             bot.send_message(message.chat.id, f'{hotel.hotel_name} '
-                                              f'address: {hotel.hotel_address} '
-                                              f'distance: {hotel.distance_from_center} km from center '
-                                              f'price: {hotel.hotel_price} RUB')
+                                              f'адрес: {hotel.hotel_address} '
+                                              f'расстояние: {hotel.distance_from_center} км от центра'
+                                              f'цена: {hotel.hotel_price} RUB')
     else:
-        bot.send_message(message.chat.id, f'not found')
+        bot.send_message(message.chat.id, f'Не найдено')
 
 
-bot.polling()
+if __name__ == '__main__':
+    bot.polling()
