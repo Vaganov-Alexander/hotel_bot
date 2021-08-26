@@ -114,33 +114,33 @@ def bestdeal(message: Message, answer_hotel: Optional[List[str]] = None):
     while len(answer_hotel) < 4:
         if not message.text.isdigit():
             if len(answer_hotel) == 0:
-                bot.send_message(message.chat.id, f'pls enter digit lower than 10')
+                bot.send_message(message.chat.id, f'How many hotels to look for? (no more than 25)')
                 bot.register_next_step_handler(message, bestdeal)
                 return
             elif len(answer_hotel) == 1:
-                bot.send_message(message.chat.id, f'enter low price digit')
+                bot.send_message(message.chat.id, f'Enter minimal price:')
                 bot.register_next_step_handler(message, bestdeal, answer_hotel)
                 return
             elif len(answer_hotel) == 3:
-                bot.send_message(message.chat.id, f'enter digit distance of center')
+                bot.send_message(message.chat.id, f'Enter distance from center:')
                 bot.register_next_step_handler(message, bestdeal, answer_hotel)
                 return
         else:
-            if len(answer_hotel) == 0 and int(message.text) > 10:
-                bot.send_message(message.migrate_to_chat_id, f'enter amount hotel, lower than 10')
+            if len(answer_hotel) == 0 and int(message.text) > 25:
+                bot.send_message(message.migrate_to_chat_id, f'How many hotels to look for? (no more than 25)')
                 bot.register_next_step_handler(message, bestdeal)
                 return
             answer_hotel.append(message.text)
             if len(answer_hotel) == 1:
-                bot.send_message(message.chat.id, f'enter minimal price')
+                bot.send_message(message.chat.id, f'Enter minimal price:')
                 bot.register_next_step_handler(message, bestdeal, answer_hotel)
                 return
             elif len(answer_hotel) == 2:
-                bot.send_message(message.chat.id, f'enter maximal price')
+                bot.send_message(message.chat.id, f'Enter maximal price:')
                 bot.register_next_step_handler(message, bestdeal, answer_hotel)
                 return
             elif len(answer_hotel) == 3:
-                bot.send_message(message.chat.id, f'enter distance of center')
+                bot.send_message(message.chat.id, f'Enter distance from center:')
                 bot.register_next_step_handler(message, bestdeal, answer_hotel)
                 return
             elif len(answer_hotel) == 4:
@@ -152,7 +152,7 @@ def bestdeal(message: Message, answer_hotel: Optional[List[str]] = None):
                 bestdeal.minimal_price = answer_hotel[1]
                 bestdeal.maximum_price = answer_hotel[2]
                 bestdeal.distance = answer_hotel[3]
-                bot.send_message(message.chat.id, f'search hotels, wait')
+                bot.send_message(message.chat.id, f'Working. looking for hotels.\nWait please!')
                 hotels_array = find_price_of_hotel(amount_of_hotels.city_id,
                                                    bestdeal.hotels_amount,
                                                    command_handler.sorting_key,
@@ -160,13 +160,15 @@ def bestdeal(message: Message, answer_hotel: Optional[List[str]] = None):
                                                    bestdeal.maximum_price,
                                                    bestdeal.distance)
                 if hotels_array:
+                    bot.send_message(message.chat.id, 'Well, what i found:')
                     for hotel in hotels_array:
-                        bot.send_message(message.chat.id, f'{hotel.hotel_name} address: {hotel.hotel_address}'
-                                                          f'distance {hotel.distance_from_center}'
-                                                          f'km from center price is {hotel.hotel_price} RUB')
+                        bot.send_message(message.chat.id, f'{hotel.hotel_name}\n'
+                                                          f'address: {hotel.hotel_address}\n'
+                                                          f'distance: {hotel.distance_from_center} km from center\n'
+                                                          f'price is {hotel.hotel_price} USD')
                     break
                 else:
-                    bot.send_message(message.chat.id, f'not fond')
+                    bot.send_message(message.chat.id, f'Nothing found')
                     break
 
 
@@ -178,24 +180,24 @@ def find_price(message: Message):
     """
     find_price.hotels_amount = message.text
     if not find_price.hotels_amount.isdigit():
-        bot.send_message(message.chat.id, f'pls enter digit hotel (lower than 10')
+        bot.send_message(message.chat.id, f'How many hotels to look for? (no more than 25)')
         bot.register_next_step_handler(message, find_price)
         return
-    elif int(find_price.hotels_amount) > 10:
-        bot.send_message(message.chat.id, f'pls enter digit hotel (lower than 10')
+    elif int(find_price.hotels_amount) > 25:
+        bot.send_message(message.chat.id, f'How many hotels to look for? (no more than 25)')
         bot.register_next_step_handler(message, find_price)
         return
-    bot.send_message(message.chat.id, f'search hotels, wait')
+    bot.send_message(message.chat.id, f'Working. looking for hotels.\nWait please!')
     hotels_array = find_price_of_hotel(amount_of_hotels.city_id, find_price.hotels_amount,
                                        command_handler.sorting_key)
     if hotels_array:
         for hotel in hotels_array:
-            bot.send_message(message.chat.id, f'{hotel.hotel_name} '
-                                              f'address: {hotel.hotel_address} '
-                                              f'distance: {hotel.distance_from_center} km from center '
-                                              f'price: {hotel.hotel_price} RUB')
+            bot.send_message(message.chat.id, f'{hotel.hotel_name}\n'
+                                              f'address: {hotel.hotel_address}\n'
+                                              f'distance: {hotel.distance_from_center} km from center\n'
+                                              f'price: {hotel.hotel_price} USD')
     else:
-        bot.send_message(message.chat.id, f'not found')
+        bot.send_message(message.chat.id, f'Nothing found')
 
 
 # # # # # # # # # # # # # # # BOT POLLING # # # # # # # # # # # # # # #

@@ -8,11 +8,12 @@ from typing import Optional, Dict
 
 # # # # # # # # # # # # # # # SETTINGS # # # # # # # # # # # # # # #
 load_dotenv()
+hotel_token = os.environ.get('RAPID_KEY')
 CITY_URL = 'https://hotals4.p.rapidapi.com/locations/search'
 HOTEL_URL = 'https://hotels4.p.rapidapi.com/properties/list'
 headers = {
-    'x-rapidapi-key': os.environ.get('RAPID_KEY'),
-    'x-rapidapi-host': os.environ.get('RAPID_HOST'),
+    'x-rapidapi-key': hotel_token,
+    'x-rapidapi-host': 'hotels4.p.rapidapi.com',
 }
 
 check_in_day = datetime.today().date()
@@ -93,7 +94,7 @@ def find_price_of_hotel(destination_id: str,
         'checkIn': str(check_in_day),
         'sortOrder': sorting_key,
         'locale': 'ru_RU',
-        'currency': 'RUB',
+        'currency': 'USD',
         'priceMax': maximum_price,
         'priceMin': minimal_price,
         'landmarkIds': 'City center',
