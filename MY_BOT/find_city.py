@@ -80,11 +80,6 @@ def find_price_of_hotel(destination_id: str,
                         minimal_price: Optional[str] = None,
                         maximum_price: Optional[str] = None,
                         distance: str = '999'):
-    # """
-    # получает на вход ряд аргументов из которых формирует параметры для запроса к апи отелей
-    # и выдачи списка из объектов Hotel в которых сохранены данные о названии отел, адресе,
-    # цене за номер и расстояние до центра
-    # """
     """
     Get arguments for parameters for API Hotel and return list of name hotel, address hotel,
     price per apartment, distance from center sorted by sorted_key
